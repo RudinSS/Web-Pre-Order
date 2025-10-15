@@ -1,0 +1,7 @@
+# File yang mengandung kunci rahasia
+/includes/secrets.php
+
+# Folder dan file umum yang tidak perlu di-commit
+/vendor/
+/node_modules/
+*.log
