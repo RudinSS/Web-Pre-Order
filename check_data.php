@@ -1,12 +1,9 @@
 <?php
-/**
- * QUICK DIAGNOSTIC
- * Upload ke folder admin sistem PO
- * Akses: https://po.yourdomain.com/admin/check_data.php
- */
+
 
 session_start();
 require_once '../includes/koneksi.php';
+require_once '../includes/secrets.php'; 
 
 if (!isset($_SESSION['loggedin']) || $_SESSION['role'] !== 'admin') {
     die("Akses ditolak.");

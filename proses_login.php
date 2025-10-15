@@ -2,6 +2,7 @@
 
 session_start();
 require_once 'includes/koneksi.php';
+require_once '../includes/secrets.php'; 
 
 $tipe_login = $_POST['tipe_login'] ?? '';
 

@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../includes/koneksi.php';
+require_once '../includes/secrets.php'; 
 
 if (!isset($_SESSION['loggedin']) || $_SESSION['role'] !== 'admin') {
     die("Akses ditolak.");
