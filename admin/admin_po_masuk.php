@@ -15,7 +15,8 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_order_items' && isset($_GE
         mysqli_stmt_execute($stmt_items);
         $result_items = mysqli_stmt_get_result($stmt_items);
         
-        $output = '<div style="margin: 15px; padding: 15px; background-color: #f7f7f7; border: 1px solid #ddd; border-radius: 5px;">';
+        $output = '<div class="child-content-wrapper">'; // Bungkusan konten
+        $output .= '<div style="margin: 15px; padding: 15px; background-color: #f7f7f7; border: 1px solid #ddd; border-radius: 5px;">';
         $output .= '<h4>Rincian Item Pesanan #' . $order_id . '</h4>';
         $output .= '<table style="width:100%; border-collapse: collapse; margin-bottom: 10px; font-size: 14px;">';
         $output .= '<thead><tr style="background-color: #eee;"><th style="padding: 8px; border: 1px solid #ccc;">SKU</th><th style="padding: 8px; border: 1px solid #ccc;">Nama Produk</th><th style="padding: 8px; border: 1px solid #ccc;">Qty</th><th style="padding: 8px; border: 1px solid #ccc;">Subtotal</th></tr></thead>';
@@ -39,6 +40,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_order_items' && isset($_GE
         $output .= '<tfoot><tr style="font-weight: bold; background-color: #e2e2e2;"><td colspan="3" style="padding: 8px; border: 1px solid #ccc; text-align: right;">Total:</td><td style="padding: 8px; border: 1px solid #ccc;">Rp ' . number_format($grand_total, 0, ',', '.') . '</td></tr></tfoot>';
         $output .= '</table>';
         $output .= '</div>';
+        $output .= '</div>'; // Tutup child-content-wrapper
         
         return $output;
     }
@@ -149,6 +151,16 @@ $result = mysqli_stmt_get_result($stmt);
         content: "+"; /* Karakter plus */
     }
     
+    /* --- CSS BARU UNTUK ANIMASI SMOOTH --- */
+    /* Container yang menampung konten AJAX (di dalam DataTables child row) */
+    .child-content-wrapper {
+        overflow: hidden; /* Penting untuk animasi height */
+    }
+    /* Sembunyikan child row secara visual saat dimuat, akan ditampilkan oleh slideDown di JS */
+    tr.dt-hasChild > td.child {
+        padding: 0 !important; /* Hapus padding default agar animasi lebih smooth */
+    }
+    /* --- AKHIR CSS BARU --- */
 </style>
 
 <div id="loading-overlay"><div class="spinner"></div></div>
@@ -206,6 +218,7 @@ $result = mysqli_stmt_get_result($stmt);
         </thead>
         <tbody>
             <?php
+            // Hapus blok 'else' manual dan biarkan DataTables menangani baris kosong
             if ($result && mysqli_num_rows($result) > 0) {
                 while ($row = mysqli_fetch_assoc($result)) {
                     // Siapkan ID untuk tampilan dan data-id
@@ -275,10 +288,8 @@ $result = mysqli_stmt_get_result($stmt);
                     echo "</td>";
                     echo "</tr>";
                 }
-            } else {
-                // Perbaiki baris fallback: pakai '7' colspan
-                echo "<tr><td colspan='7' style='border: 1px solid #ddd; padding: 8px; text-align:center;'>Tidak ada pesanan yang cocok.</td></tr>";
             }
+            // Hapus blok else di sini
             ?>
         </tbody>
     </table>
@@ -315,7 +326,7 @@ $(document).ready(function() {
                 action: 'get_order_items', 
                 order_id: order_id 
             },
-            async: false, // Digunakan agar DataTables menunggu konten dimuat
+            async: false, 
             success: function(response) {
                 // Response sekarang HANYA berisi HTML rincian item
                 content = response;
@@ -325,7 +336,7 @@ $(document).ready(function() {
             }
         });
         
-        return '<div style="background-color: #f7f7f7; padding: 10px;">' + content + '</div>';
+        return '<div>' + content + '</div>';
     }
 
     // Event listener pada klik kolom pertama
@@ -337,11 +348,22 @@ $(document).ready(function() {
         if (!order_id) return; 
 
         if (row.child.isShown()) {
-            row.child.hide();
-            tr.removeClass('dt-show');
+            // TUTUP dengan animasi slideUp
+            $('div.child-content-wrapper', row.child()).slideUp(200, function(){
+                 row.child.hide();
+                 tr.removeClass('dt-show');
+            });
         } else {
+            // BUKA
+            // 1. Tampilkan row kosong DataTables
             row.child(format(order_id)).show();
             tr.addClass('dt-show');
+            
+            // 2. Sembunyikan konten AJAX yang baru dimuat
+            $('div.child-content-wrapper', row.child()).hide();
+
+            // 3. Tampilkan konten dengan animasi slideDown
+            $('div.child-content-wrapper', row.child()).slideDown(400);
         }
     });
 });
@@ -349,7 +371,4 @@ $(document).ready(function() {
 
 <?php 
 require_once '../includes/footer.php';
-
-// --- LOGIKA PHP UNTUK MEMENUHI PERMINTAAN AJAX (SUDAH DIPINDAHKAN KE ATAS) ---
-// Bagian ini sekarang dikosongkan karena logika sudah dipindahkan ke baris paling atas (sebelum header.php)
 ?>
