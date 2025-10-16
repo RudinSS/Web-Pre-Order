@@ -52,7 +52,6 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_order_items' && isset($_GE
 // --- AKHIR PENANGANAN AJAX ---
 
 if (session_status() == PHP_SESSION_NONE) {
-    session_name('PREORDER_SESSION');
     session_start();
 }
 require_once '../includes/header.php'; 
